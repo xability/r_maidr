@@ -16,4 +16,5 @@ URL: https://github.com/uiuc-ischool-accessible-computing-lab/data11y
 BugReports: https://github.com/uiuc-ischool-accessible-computing-lab/data11y/issues
 Imports: 
     gridSVG,
+    htmltools,
     usethis
