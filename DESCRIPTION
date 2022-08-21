@@ -17,4 +17,5 @@ BugReports: https://github.com/uiuc-ischool-accessible-computing-lab/data11y/iss
 Imports: 
     gridSVG,
     htmltools,
+    magrittr,
     usethis
