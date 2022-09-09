@@ -19,5 +19,6 @@ Imports:
     glue,
     gridSVG,
     htmltools,
+    htmlwidgets,
     magrittr,
     usethis
