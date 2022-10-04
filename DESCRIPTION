@@ -3,7 +3,7 @@ Title: Making Data Visualization Accessible
 Version: 0.0.0.9000
 Authors@R: 
     person("JooYoung", "Seo", , "jseo1005@illinois.edu", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           comment = c(ORCID = "0000-0002-4064-6012"))
 Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 Suggests: 
