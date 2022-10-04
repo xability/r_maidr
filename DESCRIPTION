@@ -24,5 +24,6 @@ Imports:
     magrittr,
     sonify,
     stringr,
+    svglite,
     tuneR,
     usethis
