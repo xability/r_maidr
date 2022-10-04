@@ -13,3 +13,17 @@ accessible.ggplot <- function(x) {
 
 # to do
 ## study s3 and s4 to generalize this process depending on graph type.
+
+
+print.ggplot <- function(...) {
+    if (interactive()) {
+        svgpath <- htmltools::plotTag(
+            ggplot2:::print.ggplot(...), "Plot object",
+            device = svglite::svglite,
+            mimeType = "image/svg+xml",
+            attribs = list(id = "my-chart")
+        )
+
+        print(svgpath)
+    }
+}

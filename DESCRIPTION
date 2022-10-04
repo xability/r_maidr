@@ -20,5 +20,9 @@ Imports:
     gridSVG,
     htmltools,
     htmlwidgets,
+    jsonlite,
     magrittr,
+    sonify,
+    stringr,
+    tuneR,
     usethis
