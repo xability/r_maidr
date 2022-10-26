@@ -41,22 +41,22 @@ if (interactive()) {
             htmltools::tags$script(htmltools::HTML(
                 glue::glue("
 
-                    const x = [{x}];
+                    const x = {x};
 
       const {{err}} = c2mChart({{
         type: \"{type}\",
         title: \"{stringr::str_to_title(type)} chart showing the relationship between {x_label} and {y_label}.\",
         element: document.getElementById('{id}'),
         cc: document.getElementById(\"screenreader-caption\"),
-        data: [{data}],
+        data: {data},
             axes: {{
                 x: {{
                     label: \"{x_label}\",
                     format: (index) => x[index]
                 }},
                 y: {{
-                    label: \"{y_label}\",
-                    minimum: {ymin}
+                    label: \"{y_label}\"
+
                 }}
             }},
 // TODO: Need to add visual syncing by using fallback
@@ -75,11 +75,12 @@ if (err) {{
 }}
       ",
                     id = "plot",
-                    x = paste0("'", paste0(.getGGXTicks(g, ggplot2::ggplot_build(g), 1), collapse = "', '"), "'"),
+                    x = jsonlite::toJSON(lubridate::as_date(ggplot2::layer_data(g)$x)),
                     x_label = g$labels$x,
                     y_label = g$labels$y,
-                    ymin = min(ggplot2::ggplot_build(g)$data[[1]]$ymin),
-                    data = paste0(ggplot2::ggplot_build(g)$data[[1]]$y, collapse = ", ")
+                    # data = paste0(ggplot2::ggplot_build(g)$data[[1]]$y, collapse = ", ")
+                    data = jsonlite::toJSON(ggplot2::layer_data(g)[, c("x", "y")])
+
                 )
             ))
         )

@@ -1,3 +1,4 @@
+# This file content has been copied from {BrailleR} package.
 ### This file is for internal functions used by VI.ggplot
 ### These functions access the objects created by ggplot and ggplot_build,
 ### and may be sensitive to changes in those structure in later ggplot versions.

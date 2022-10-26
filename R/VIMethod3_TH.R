@@ -1,3 +1,5 @@
+# This file content has been copied from {BrailleR} package
+
 ## Textify performs whisker rendering
 ## First parameter is a list of objects.
 ## Second parameter is the name of a template file.
