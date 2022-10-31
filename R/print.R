@@ -1,5 +1,6 @@
 
-# New print.numeric s3 method
+#' New print.numeric s3 method
+#'@export 
 
 if (interactive()) {
     # Helper function to retrieve x ticks borrowed from {BrailleR}
