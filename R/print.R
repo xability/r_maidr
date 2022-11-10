@@ -1,19 +1,5 @@
-
-#' New print.numeric s3 method
-#'@export 
-
-if (interactive()) {
-    # Helper function to retrieve x ticks borrowed from {BrailleR}
-    ## Also need to copy y tick helper function to handle coord_flip
-    .getGGXTicks <- function(x, xbuild, layer) {
-        # The location of this item is changing in an upcoming ggplot version
-        if ("panel_ranges" %in% names(xbuild$layout)) {
-            return(xbuild$layout$panel_ranges[[layer]]$x.labels) # ggplot 2.2.1
-        } else {
-            xlabs <- xbuild$layout$panel_params[[1]]$x$get_labels()
-            return(xlabs[!is.na(xlabs)])
-        }
-    }
+#' @export
+NULL
 
     print.ggplot <- function(g, ...) {
         type <- stringr::str_to_lower(stringr::str_extract(class(g$layers[[1]]$geom)[[1]], "(?<=Geom).*"))
@@ -88,9 +74,10 @@ if (err) {{
 
         print(a11y_result, browse = TRUE)
     }
-}
 
 
+#' @export
+NULL
 
 plot.numeric <- function(...) {
   plot(...)
