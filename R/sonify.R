@@ -30,7 +30,7 @@ use_chart2music <- function() {
   )
 }
 
-#' @describeIn chart2music Returns an [htmltools::htmlDependency] with the 
+#' @describeIn chart2music Returns an [htmltools::htmlDependency] with the
 #'   chart2music dependencies. Most users will want to use `use_chart2music()`.
 #' @export
 html_dependency_chart2music <- function() {
