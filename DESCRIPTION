@@ -1,5 +1,5 @@
-Package: data11y
-Title: Making Data Visualization Accessible
+Package: maidr
+Title: Multimodal Access and Interactive Data Representation
 Version: 0.0.0.9000
 Authors@R: 
     person("JooYoung", "Seo", , "jseo1005@illinois.edu", role = c("aut", "cre"),
