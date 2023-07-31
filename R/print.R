@@ -1,32 +1,31 @@
 #' @export
-NULL
 
 print.ggplot <- function(g, ...) {
-    type <- stringr::str_to_lower(stringr::str_extract(class(g$layers[[1]]$geom)[[1]], "(?<=Geom).*"))
+  type <- stringr::str_to_lower(stringr::str_extract(class(g$layers[[1]]$geom)[[1]], "(?<=Geom).*"))
 
 
-    # svgpath <- htmltools::capturePlot(
-    #     ggplot2:::print.ggplot(g, ...),
-    #     tempfile(fileext = ".svg"),
-    #     svglite::svglite,
-    #     width = 8, height = 3.75
-    # )
-    s <- svglite::svgstring(standalone = FALSE, id = "plot")
-    ggplot2:::print.ggplot(g, ...)
-    svg <- s()
-    dev.off()
+  # svgpath <- htmltools::capturePlot(
+  #     ggplot2:::print.ggplot(g, ...),
+  #     tempfile(fileext = ".svg"),
+  #     svglite::svglite,
+  #     width = 8, height = 3.75
+  # )
+  s <- svglite::svgstring(standalone = FALSE, id = "plot")
+  ggplot2:::print.ggplot(g, ...)
+  svg <- s()
+  dev.off()
 
-    a11y_result <- htmltools::tags$main(
-        htmltools::tags$script(src = "https://cdn.jsdelivr.net/npm/chart2music"),
-        # htmltools::tags$object(
-        #     data = svgpath,
-        #     type = "image/svg+xml", id = "plot", width = "800",
-        #     height = "800"
-        # ),
-        htmltools::HTML(svg),
-        htmltools::div(id = "screenreader-caption"),
-        htmltools::tags$script(htmltools::HTML(
-            glue::glue("
+  a11y_result <- htmltools::tags$main(
+    htmltools::tags$script(src = "https://cdn.jsdelivr.net/npm/chart2music"),
+    # htmltools::tags$object(
+    #     data = svgpath,
+    #     type = "image/svg+xml", id = "plot", width = "800",
+    #     height = "800"
+    # ),
+    htmltools::HTML(svg),
+    htmltools::div(id = "screenreader-caption"),
+    htmltools::tags$script(htmltools::HTML(
+      glue::glue("
 
                     const x = {x};
 
@@ -61,16 +60,15 @@ if (err) {{
     console.error(err);
 }}
       ",
-                id = "plot",
-                x = jsonlite::toJSON(lubridate::as_date(ggplot2::layer_data(g)$x)),
-                x_label = g$labels$x,
-                y_label = g$labels$y,
-                # data = paste0(ggplot2::ggplot_build(g)$data[[1]]$y, collapse = ", ")
-                data = jsonlite::toJSON(ggplot2::layer_data(g)[, c("x", "y")])
-            )
-        ))
-    )
+        id = "plot",
+        x = jsonlite::toJSON(lubridate::as_date(ggplot2::layer_data(g)$x)),
+        x_label = g$labels$x,
+        y_label = g$labels$y,
+        # data = paste0(ggplot2::ggplot_build(g)$data[[1]]$y, collapse = ", ")
+        data = jsonlite::toJSON(ggplot2::layer_data(g)[, c("x", "y")])
+      )
+    ))
+  )
 
-    print(a11y_result, browse = TRUE)
+  print(a11y_result, browse = TRUE)
 }
-

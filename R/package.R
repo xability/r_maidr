@@ -1,9 +1,9 @@
 #' Make visualization accessible in \pkg{knitr} documents
 #'
-#' @name data11y
-#' @aliases data11y-package
+#' @name maidr
+#' @aliases maidr-package
 #' @import utils
-#' @importFrom knitr asis_output kable knit_print
+# @importFrom knitr asis_output kable knit_print
 NULL
 
 # unregister S3 methods in this package
@@ -11,7 +11,7 @@ unregister_S3 <- function() {
   if (!("knitr" %in% loadedNamespaces())) {
     return()
   }
-  objs <- ls(asNamespace("data11y"))
+  objs <- ls(asNamespace("maidr"))
   s3env <- getFromNamespace(".__S3MethodsTable__.", "knitr")
   rm(list = intersect(objs, ls(s3env)), envir = s3env)
 }
