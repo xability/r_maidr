@@ -32,6 +32,15 @@
   if (is.null(x)) {
     return(NULL)
   }
+
+  # Deal with coords
+  supportedNonCartesian <- c("CoordPolar")
+  if (x$coord %in% supportedNonCartesian) {
+    x$noncartesian <- TRUE
+  }
+  x[[x$coord]] <- TRUE
+  x <- append(x, x$coordInformation) # Add all coord information
+
   if (x$npanels == 1) {
     x$singlepanel <- TRUE
   }
@@ -46,6 +55,12 @@
   }
   if (length(x$panelrows) > 0 && length(x$panelcols) > 0) {
     x$panelgrid <- TRUE
+  }
+  if (length(x$xaxis) == 1) {
+    x$xaxis <- NULL
+  }
+  if (length(x$yaxis) == 1) {
+    x$yaxis <- NULL
   }
   # If samescale then axis labels are at top level
   if (!is.null(x$xaxis$xticklabels)) {
@@ -84,8 +99,7 @@
         if (n > threshold) {
           layer$largecount <- TRUE
         } else {
-          if (layer$type == "line") {
-            # Lines are special, items are within groups
+          if (layer$type == "line") { # Lines are special, items are within groups
             for (i in 1:length(layer$lines)) {
               layer$lines[[i]]$linenum <- i
               npoints <- nrow(layer$lines[[i]]$scaledata)
@@ -115,8 +129,7 @@
 # This code isn't efficient, but hopefully we aren't printing a huge number of points
 .listifyVars <- function(varlist) {
   itemlist <- list()
-  for (i in seq_along(varlist[[1]])) {
-    # Assumes all varlists are the same length
+  for (i in seq_along(varlist[[1]])) { # Assumes all varlists are the same length
     item <- list()
     for (j in seq_along(varlist)) {
       item$itemnum <- i
@@ -158,7 +171,11 @@ print.VIgraph <- function(x, ...) {
 # Small helper function - builds list excluding items that are null or length 0
 .VIlist <- function(...) {
   l <- list(...)
-  l[(lapply(l, length) > 0)]
+  if (length(l[(lapply(l, length) > 0)]) == 0) {
+    return(NULL)
+  } else {
+    return(l[(lapply(l, length) > 0)])
+  }
 }
 
 sort.VIgraph <- function(x, decreasing = FALSE, by = "x", ...) {
@@ -238,22 +255,33 @@ VI.ggplot <- function(x, Describe = FALSE, threshold = 10, template = system.fil
 # Builds the VIgg structure describing the graph
 .VIstruct.ggplot <- function(x) {
   xbuild <- suppressMessages(ggplot_build(x))
+
   # If this is a plot we really can't deal with, say so now
-  if (!(.getGGCoord(x, xbuild) %in% c("CoordCartesian", "CoordFixed"))) {
-    message("VI cannot process ggplot objects with flipped or non-Cartesian coordinates")
+  supportedClasses <- c("CoordCartesian", "CoordPolar", "CoordFlip")
+  if (!sum(.getGGCoord(x, xbuild) %in% supportedClasses) > 0) {
+    message("VI cannot process this ggplot objects coordinates")
     return(NULL)
   }
+
+  # Deal with quirks of different coordinate system
+  coord <- .getGGCoord(x, xbuild)
+  coordInformation <- list()
+  if (coord == "CoordPolar") {
+    PolarTheta <- x$coordinates$theta
+    PolarR <- x$coordinates$r
+    coordInformation <- .VIlist(PolarTheta = PolarTheta, PolarR = PolarR)
+  }
+
   title <- .getGGTitle(x, xbuild)
   subtitle <- .getGGSubtitle(x, xbuild)
   caption <- .getGGCaption(x, xbuild)
   annotations <- .VIlist(title = title, subtitle = subtitle, caption = caption)
-  xlabel <- .getGGXLab(x, xbuild)
-  ylabel <- .getGGYLab(x, xbuild)
-  if (!.getGGScaleFree(x, xbuild)) {
-    # Can talk about axis ticks at top level unless scale_free
+  xlabel <- .getGGAxisLab(x, xbuild, "x")
+  ylabel <- .getGGAxisLab(x, xbuild, "y")
+  if (!.getGGScaleFree(x, xbuild)) { # Can talk about axis ticks at top level unless scale_free
     samescale <- TRUE
-    xticklabels <- .getGGXTicks(x, xbuild, 1)
-    yticklabels <- .getGGYTicks(x, xbuild, 1)
+    xticklabels <- .getGGTicks(x, xbuild, 1, "x")
+    yticklabels <- .getGGTicks(x, xbuild, 1, "y")
   } else {
     samescale <- NULL
     xticklabels <- NULL
@@ -268,7 +296,8 @@ VI.ggplot <- function(x, Describe = FALSE, threshold = 10, template = system.fil
   layerCount <- .getGGLayerCount(x, xbuild)
   VIstruct <- .VIlist(
     annotations = annotations, xaxis = xaxis, yaxis = yaxis, legends = legends, panels = panels,
-    npanels = length(panels), nlayers = layerCount, panelrows = panelrows, panelcols = panelcols, type = "ggplot"
+    npanels = length(panels), nlayers = layerCount,
+    panelrows = panelrows, panelcols = panelcols, coord = coord, coordInformation = coordInformation, type = "ggplot"
   )
   class(VIstruct) <- "VIstruct"
   return(VIstruct)
@@ -332,10 +361,10 @@ VI.ggplot <- function(x, Describe = FALSE, threshold = 10, template = system.fil
     scalefree <- .getGGScaleFree(x, xbuild)
     panel[["samescale"]] <- if (!scalefree) TRUE # Might want to move this into pre-processing step
     if (scalefree) {
-      panel[["xticklabels"]] <- .getGGXTicks(x, xbuild, i)
-      panel[["yticklabels"]] <- .getGGYTicks(x, xbuild, i)
-      panel[["xlabel"]] <- .getGGXLab(x, xbuild) # Won't actually change over the panels
-      panel[["ylabel"]] <- .getGGYLab(x, xbuild) # But we still want to mention them
+      panel[["xticklabels"]] <- .getGGTicks(x, xbuild, 1, "x")
+      panel[["yticklabels"]] <- .getGGTicks(x, xbuild, 1, "y")
+      panel[["xlabel"]] <- .getGGAxisLab(x, xbuild, "x") # Won't actually change over the panels
+      panel[["ylabel"]] <- .getGGAxisLab(x, xbuild, "y") # But we still want to mention them
     }
     vars <- list()
     for (j in seq_along(panelvars)) {
@@ -394,6 +423,24 @@ VI.ggplot <- function(x, Describe = FALSE, threshold = 10, template = system.fil
         layer$transform <- map$badTransform
       }
       layer$scaledata <- map$value
+
+      # Get visible points.
+      # Current model is only effective for median sizes less than 18.
+      if (median(cleandata$size) < 18) {
+        layer$visibleproportion <- (.getGGVisiblePoints(cleandata) * 100) |>
+          signif(digits = 2) |>
+          paste0("%")
+      }
+
+
+      # Check to see if the shape parameter has been set.
+      if (is.null(cleandata$aes_params[["shape"]])) {
+        # Make sure there is only one shape for all points
+        # We know this is the default from the previous conditional
+        if (length(unique(xbuild$data[[layeri]]$shape)) == 1) {
+          layer$defaultShape <- .convertAes(data.frame(shape = xbuild$data[[layeri]]$shape[1]))$shape[1]
+        }
+      }
       # Also report on any aesthetic variables that vary across the layer
       layer <- .addAesVars(x, xbuild, cleandata, layeri, layer, panel)
 
@@ -405,23 +452,45 @@ VI.ggplot <- function(x, Describe = FALSE, threshold = 10, template = system.fil
       # as they won't be displayed
       cleandata <- layer$data[!is.na(layer$data$xmin) & !is.na(layer$data$xmax), ]
       # Recount rows
+
+      # Whether the bar is vertical or horizontal
+      layer$orientation <- .findBarOrientation(x, xbuild, layeri)
+
+      # Count how many bars are seen visually this is different
+      # to the number of actual bars as bars may be stacked on top of each other
+      layer$numberOfBars <- .getNumOfBars(cleandata, layer$orientation)
       layer$n <- nrow(cleandata)
+
+      # If bar width varies then we should report xmin and xmax instead
+      if (layer$orientation == "vertical") {
+        width <- cleandata$xmax - cleandata$xmin
+        valueList <- list(loc = cleandata$x, min = cleandata$ymin, max = cleandata$ymax)
+      } else {
+        width <- cleandata$ymax - cleandata$ymin
+        valueList <- list(loc = cleandata$y, min = cleandata$xmin, max = cleandata$xmax)
+      }
       map <- .mapDataValues(
-        x, xbuild, list("x", "ymin", "ymax"), panel,
-        list(x = cleandata$x, ymin = cleandata$ymin, ymax = cleandata$ymax)
+        x, xbuild, list("loc", "min", "max"), panel,
+        valueList
       )
+
       if (!is.null(map$badTransform)) {
         layer$badtransform <- TRUE
         layer$transform <- map$badTransform
       }
       layer$scaledata <- map$value
-      # If bar width varies then we should report xmin and xmax instead
-      width <- cleandata$xmax - cleandata$xmin
+
+      # Print out information of width of bar if they vary
       if (max(width) - min(width) > .0001) { # allow for small rounding error
-        layer$scaledata <- cbind(layer$scaledata, xmin = cleandata$xmin, xmax = cleandata$xmax)
+        if (layer$orientation == "vertical") {
+          layer$scaledata <- cbind(layer$scaledata, widthmin = cleandata$xmin, widthmin = cleandata$xmax)
+        } else {
+          layer$scaledata <- cbind(layer$scaledata, widthmin = cleandata$ymin, widthmin = cleandata$ymax)
+        }
+        layer$varyingWidths <- T
+      } else {
+        layer$varyingWidths <- F
       }
-      # Whether the bar is vertical or horizontal
-      layer$orientation <- .findBarOrientation(x, xbuild, layeri)
       # Also report on any aesthetic variables that vary across the layer
       layer <- .addAesVars(x, xbuild, cleandata, layeri, layer, panel)
 
@@ -459,29 +528,52 @@ VI.ggplot <- function(x, Describe = FALSE, threshold = 10, template = system.fil
 
       # BOXPLOT
     } else if (layerClass == "GeomBoxplot") {
+      ## Could add information about the varying widths
+
       layer$type <- "box"
       cleandata <- layer$data # No need for cleaning since this data is already aggregated
       layer$n <- nrow(layer$data)
-      nOutliers <- sapply(cleandata$outliers, length)
-      map <- .mapDataValues(
-        x, xbuild, list("x", "ymin", "lower", "middle", "upper", "ymax"), panel,
-        list(
-          x = cleandata$x, ymin = cleandata$ymin, lower = cleandata$lower,
-          middle = cleandata$middle, upper = cleandata$upper,
-          ymax = cleandata$ymax
+
+
+      # Deal with them either being horizontal or vertical
+      flipped <- sum(cleandata$flipped_aes) == length(cleandata$flipped_aes)
+      if (flipped) {
+        map <- .mapDataValues(
+          x, xbuild, list("loc", "min", "lower", "middle", "upper", "max"), panel,
+          list(
+            loc = cleandata$y, min = cleandata$xmin, lower = cleandata$xlower,
+            middle = cleandata$xmiddle, upper = cleandata$xupper,
+            max = cleandata$xmax
+          )
         )
-      )
+      } else {
+        map <- .mapDataValues(
+          x, xbuild, list("loc", "min", "lower", "middle", "upper", "max"), panel,
+          list(
+            loc = cleandata$x, min = cleandata$ymin, lower = cleandata$lower,
+            middle = cleandata$middle, upper = cleandata$upper,
+            max = cleandata$ymax
+          )
+        )
+      }
+      layer$flipped <- flipped
+
       if (!is.null(map$badTransform)) {
         layer$badtransform <- TRUE
         layer$transform <- map$badTransform
       }
       layer$scaledata <- map$value
-      layer$scaledata[["noutliers"]] <- nOutliers
-      # Might want to report high and low outliers separately?
-      # Would like to include outlier detail as well.
-      # scaledata is currently a list of vectors.  If we wanted to include outliers
-      # within each boxes object for reporting, then boxes would need to become
-      # a list of lists.
+
+      nOutliers <- sapply(cleandata$outliers, length)
+      layer$scaledata[["nooutliers"]] <- nOutliers == 0
+
+      # Outlier code made nicer with help from josliber on code review
+      # https://codereview.stackexchange.com/questions/281708/calculate-number-of-max-and-min-outliers-from-data-frame/281730#281730
+
+      middle <- if (flipped) cleandata$xmiddle else cleandata$middle
+      layer$scaledata[["minoutliers"]] <- mapply(function(x, y) sum(x < y), cleandata$outliers, middle)
+      layer$scaledata[["maxoutliers"]] <- mapply(function(x, y) sum(x > y), cleandata$outliers, middle)
+
       # Also report on any aesthetic variables that vary across the layer
       layer <- .addAesVars(x, xbuild, cleandata, layeri, layer, panel)
 
@@ -494,7 +586,195 @@ VI.ggplot <- function(x, Describe = FALSE, threshold = 10, template = system.fil
       deci <- toString(.getGGSmoothLevel(x, xbuild, layeri) * 100)
       layer$level <- paste(deci, "%", sep = "")
 
-      # U UNKNOWN
+      if (layer$ci) {
+        layer$shadedarea <- .getGGShadedArea(x, xbuild, layeri)
+      }
+
+      # RIBBON
+    } else if (layerClass == "GeomRibbon" | layerClass == "GeomArea") {
+      layer$type <- "ribbon"
+      data <- xbuild$data[[layeri]]
+
+
+      # Width of the ribbon
+      yMin <- data$ymin
+      yMax <- data$ymax
+
+      # Length of the ribbon
+      xMin <- data$xmin
+      xMax <- data$xmax
+
+      # actual data
+      x_data <- data$x
+      y_data <- data$y
+
+      # Removing the leading and trailing 0
+      if (layerClass == "GeomArea") {
+        yMin <- yMin[2:(length(yMin) - 1)]
+        yMax <- yMax[2:(length(yMax) - 1)]
+        xMin <- xMin[2:(length(xMin) - 1)]
+        xMax <- xMax[2:(length(xMax) - 1)]
+        x_data <- x_data[2:(length(x_data) - 1)]
+        y_data <- y_data[2:(length(y_data) - 1)]
+      }
+
+      widthIntervals <- seq(from = 1, to = length(y_data), length.out = 5)
+
+      # Bound on the x or y axis
+      if (is.null(yMin) && is.null(yMax) && !is.null(xMin) && !is.null(xMax)) {
+        ybounds <- FALSE
+        layer$bound <- "x"
+      } else {
+        ybounds <- TRUE
+        layer$bound <- "y"
+      }
+
+      # Get the width of the ribbon
+      if (ybounds) {
+        width <- yMax - yMin
+      } else {
+        width <- xMax - xMin
+      }
+
+      # constant or nonconstant width
+      if (length(unique(width)) != 1) {
+        layer$nonconstantribbonwidth <- T
+        width <- width[widthIntervals] |> signif()
+      } else {
+        width <- width[1]
+      }
+
+      layer$ribbonwidth <- .listifyVars(list(value = width))
+
+      # Centre
+      if (ybounds) {
+        centres <- (yMax + yMin)[widthIntervals] |>
+          lapply(function(.x) signif((.x / 2)))
+      } else {
+        centres <- (xMax + xMin)[widthIntervals] |>
+          lapply(function(.x) signif((.x / 2)))
+      }
+
+      if (length(unique(centres)) == 1) { # Centre is constant
+        layer$constantcentre <- T
+        centres <- centres[1]
+      }
+      layer$centre <- .listifyVars(list(value = unlist(centres)))
+
+      # Shaded area
+      if (ybounds) {
+        layer$shadedarea <- .getGGShadedArea(x, xbuild, layeri)
+      } else {
+        layer$shadedarea <- .getGGShadedArea(x, xbuild, layeri, useX = F)
+      }
+
+      # expand_limits
+    } else if (layerClass == "GeomBlank") {
+      # As only one method uses geom blank at the moment it will be treated like
+      # expand limits
+      layer$type <- "expand_limits"
+
+      data <- xbuild$data[[layeri]]
+
+      # Deal with situations of failed transformations. In these cases it wont affect
+      # the grpah so just removing the bound.
+      bounds <- list(x = data$x, y = data$y) |>
+        lapply(function(bounds) {
+          unlist(lapply(bounds, function(bound) {
+            if (!is.null(bound) && !is.na(bound)) {
+              bound
+            } else {
+              NULL
+            }
+          }))
+        })
+
+      # Helper function to calculate the increase
+      getIncrease <- function(max, min, dataRange) {
+        if (max < dataRange[2]) max <- dataRange[2]
+        if (min > dataRange[1]) min <- dataRange[1]
+        dataSize <- (dataRange[2] - dataRange[1])
+        if (dataSize == 0) {
+          increase <- (max - min) / 0.1
+          # It is divided by zero because if there is no width then the graph will
+          # be very narrow. From my testing it is about 0.1. But the emphasis here
+          # is that any limit will probably make the graph very much larger.
+        } else {
+          increase <- (max - min) / (dataRange[2] - dataRange[1])
+        }
+
+        return(increase)
+      }
+
+      # Get plots max and mins on both axis
+      xRange <- NULL
+      yRange <- NULL
+      # To get the min max of the plot it will go through all layers looking
+      # in any of the potential locations below
+      yLocations <- c("y", "ymin", "ymax", "yintercept")
+      xLocations <- c("x", "xmin", "xmax", "xintercept")
+      for (layerNum in 1:layerCount) {
+        if (layerNum == layeri) break
+        currentLayer <- xbuild$data[[layerNum]]
+
+        # x min
+        for (loc in xLocations) {
+          if (!is.null(currentLayer[[loc]])) {
+            xRange[1] <- min(min(currentLayer[[loc]]), xRange[1], na.rm = T)
+          }
+        }
+
+        # x max
+        for (loc in xLocations) {
+          if (!is.null(currentLayer[[loc]])) {
+            xRange[2] <- max(max(currentLayer[[loc]]), xRange[2], na.rm = T)
+          }
+        }
+
+        # y min
+        for (loc in yLocations) {
+          if (!is.null(currentLayer[[loc]])) {
+            yRange[1] <- min(min(currentLayer[[loc]]), yRange[1], na.rm = T)
+          }
+        }
+
+        # y max
+        for (loc in yLocations) {
+          if (!is.null(currentLayer[[loc]])) {
+            yRange[2] <- max(max(currentLayer[[loc]]), yRange[2], na.rm = T)
+          }
+        }
+      }
+
+      dataRange <- list(x = xRange, y = yRange)
+
+      # Get the increase for each axis
+      axises <- c("x", "y")
+      increase <- list()
+      for (axis in axises) {
+        bound <- bounds[[axis]]
+        if (!is.null(bound) && !is.null(dataRange[[axis]])) {
+          increase[axis] <- getIncrease(max(bound), min(bound), dataRange[[axis]])
+        }
+      }
+
+      # Setup ready for moustache template
+      if (!is.null(increase[["x"]]) && increase[["x"]] > 1) {
+        if (increase[["x"]] < 1.01) { # Format really small changes differently
+          layer$xIncrease <- sprintf("%0.1f%%", (increase[["x"]] - 1) * 100)
+        } else {
+          layer$xIncrease <- sprintf("%0.0f%%", (increase[["x"]] - 1) * 100)
+        }
+      }
+
+      if (!is.null(increase[["y"]]) && increase[["y"]] > 1) {
+        if (increase[["y"]] < 1.01) {
+          layer$yIncrease <- sprintf("%0.1f%%", (increase[["y"]] - 1) * 100)
+        } else {
+          layer$yIncrease <- sprintf("%0.0f%%", (increase[["y"]] - 1) * 100)
+        }
+      }
+      # Unknown
     } else {
       layer$type <- "unknown"
       # Name the unknown type and give it a/an accordingly
@@ -554,12 +834,10 @@ VI.ggplot <- function(x, Describe = FALSE, threshold = 10, template = system.fil
 
     if (is.null(scale)) { # No scale found
       next
-    } else if (("ScaleDiscrete" %in% class(scale))) {
-      # Try to map back to levels
+    } else if (("ScaleDiscrete" %in% class(scale))) { # Try to map back to levels
       match <- match(value, scale$palette.cache)
       transformed[[var]] <- scale$range$range[match]
-    } else {
-      # Continuous scale - We can't currently map these
+    } else { # Continuous scale - We can't currently map these
       next
     }
   }
@@ -577,8 +855,7 @@ VI.ggplot <- function(x, Describe = FALSE, threshold = 10, template = system.fil
 
     if (is.null(scale)) { # No scale - just return the stored value
       r <- value
-    } else if (("ScaleDiscrete" %in% class(scale))) {
-      # Try to map back to levels
+    } else if (("ScaleDiscrete" %in% class(scale))) { # Try to map back to levels
       map <- scale$range$range
       if (is.null(map)) {
         r <- value
@@ -591,10 +868,8 @@ VI.ggplot <- function(x, Describe = FALSE, threshold = 10, template = system.fil
           r <- mapping
         }
       }
-    } else {
-      # Continuous scale - try to undo any transform
-      if (is.null(scale$trans)) {
-        # No transform
+    } else { # Continuous scale - try to undo any transform
+      if (is.null(scale$trans)) { # No transform
         r <- value
       } else if (is.null(scale$trans$inverse)) {
         badTransform <- scale$trans$name

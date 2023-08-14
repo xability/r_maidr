@@ -1,6 +1,0 @@
-dependencies:
-  - name: chart2music
-    version: 1.4.0
-    src: htmlwidgets/lib/chart2music-1.4.0
-    script: 
-      - chart2music.min.js
