@@ -16,5 +16,5 @@ You can install the development version of maidr from
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("jooyoungseo/maidr")
+remotes::install_github("jooyoungseo/r-maidr")
 ```
