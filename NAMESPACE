@@ -3,6 +3,7 @@
 S3method(maidr,ggplot)
 export("%>%")
 export(create_barplot_schema)
+export(create_scatterplot_schema)
 export(html_dependency_chart2music)
 export(maidr)
 export(print_svg)

@@ -4,7 +4,7 @@ Version: 0.0.0.9000
 Authors@R: 
     person("JooYoung", "Seo", , "jseo1005@illinois.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-4064-6012"))
-Description: What the package does (one paragraph).
+Description: Making data visualization accessible to blind and low-vision people through multimodal access and interactive data representation.
 License: GPL (>= 3)
 Suggests: 
     testthat (>= 3.0.0)
@@ -17,6 +17,7 @@ BugReports: https://github.com/jooyoungseo/data11y/issues
 Imports: 
     BrailleR,
     broom,
+    dplyr,
     glue,
     gridSVG,
     htmltools,
@@ -28,5 +29,6 @@ Imports:
     sonify,
     stringr,
     svglite,
+    tidyr,
     tuneR,
     usethis
