@@ -40,6 +40,16 @@ maidr.ggplot <- function(g, ...) {
 
     class(maidr_object) <- c("maidr", class(maidr_object))
     return(invisible(maidr_object))
+  } else if (type1 == "point" && npanels == 1 && nlayers == 2) {
+    json_schema <- create_scatterplot_schema(id, title, xlabel, ylabel, layers)
+    svg <- print_svg(g, id)
+    maidr_object <- list(svg = svg, json_schema = json_schema)
+    maidr_object$maidr_widget <- maidr_widget(svg = maidr_object$svg, json_schema = maidr_object$json_schema)
+    print(maidr_object$maidr_widget)
+
+    class(maidr_object) <- c("maidr", class(maidr_object))
+    return(invisible(maidr_object))
+    # return(layers)
   } else {
     warning("The plot is not supported in MAIDR.")
   }
@@ -53,18 +63,18 @@ maidr_dependency <- function() {
     src = "htmlwidgets/lib/maidr-0.0.9",
     package = "maidr",
     script = c(
-      "audio.js",
-      "barplot.js",
-      "boxplot.js",
-      "constants.js",
-      "display.js",
-      "heatmap.js",
+      "js/audio.js",
+      "js/barplot.js",
+      "js/boxplot.js",
+      "js/constants.js",
+      "js/display.js",
+      "js/heatmap.js",
       # "maidr.js",
-      "scatterplot.js",
-      "controls.js",
-      "init.js"
+      "js/scatterplot.js",
+      "js/controls.js",
+      "js/init.js"
     ),
-    stylesheet = "styles.css",
+    stylesheet = "css/styles.css",
     all_files = TRUE
   )
 }

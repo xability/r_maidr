@@ -36,7 +36,6 @@ create_barplot_schema <- function(type1, id, title, xlabel, ylabel, xticklabels,
   # # Convert the list to a JSON object
   json_object <- jsonlite::toJSON(json_data, auto_unbox = TRUE, pretty = TRUE)
 
-
   # Unquote the element selector
   json_object <- base::gsub('(?<="elements": )"(.*?)"', "\\1", json_object, perl = TRUE)
 
