@@ -142,13 +142,13 @@ class Display {
       let currentIndex = chartTypes.indexOf(constants.chartType);
       if (updown == 'down') {
         if (currentIndex == 0) {
-          constants.chartType = chartTypes[chartTypes.length - 1];
+          //constants.chartType = chartTypes[chartTypes.length - 1];
         } else {
           constants.chartType = chartTypes[currentIndex - 1];
         }
       } else {
         if (currentIndex == chartTypes.length - 1) {
-          constants.chartType = chartTypes[0];
+          //constants.chartType = chartTypes[0];
         } else {
           constants.chartType = chartTypes[currentIndex + 1];
         }
@@ -210,14 +210,13 @@ class Display {
     let reviewText = '';
     if (constants.chartType == 'bar') {
       // {legend x} is {colname x}, {legend y} is {value y}
-      verboseText =
-        plot.plotLegend.x +
-        ' is ' +
-        plot.columnLabels[position.x] +
-        ', ' +
-        plot.plotLegend.y +
-        ' is ' +
-        plot.plotData[position.x];
+      if (plot.plotLegend.x.length > 0 && plot.columnLabels[position.x]) {
+        verboseText =
+          plot.plotLegend.x + ' is ' + plot.columnLabels[position.x] + ', ';
+      }
+      if (plot.plotData[position.x]) {
+        verboseText += plot.plotLegend.y + ' is ' + plot.plotData[position.x];
+      }
       if (constants.textMode == 'off') {
         // do nothing :D
       } else if (constants.textMode == 'terse') {
@@ -333,7 +332,7 @@ class Display {
       } else if (!constants.navigation) {
         if (plot.y_group_label) textVerbose += plot.y_group_label;
       }
-      // and axis label
+      // and axes label
       if (constants.navigation) {
         if (plot.x_labels[plotPos]) {
           textVerbose += ' is ';

@@ -20,7 +20,7 @@ create_barplot_schema <- function(type1, id, title, xlabel, ylabel, xticklabels,
     type = type1,
     id = id,
     title = title,
-    elements = sprintf("svg#%s g:nth-last-of-type(2) > rect:not(:first-child)", id),
+    elements = sprintf("document.querySelectorAll('svg#%s g:nth-last-of-type(2) > rect:not(:first-child)')", id),
     axes = list(
       x = list(
         label = xlabel,
@@ -33,8 +33,12 @@ create_barplot_schema <- function(type1, id, title, xlabel, ylabel, xticklabels,
     data = ymax
   )
 
-  # Convert the list to a JSON object
+  # # Convert the list to a JSON object
   json_object <- jsonlite::toJSON(json_data, auto_unbox = TRUE, pretty = TRUE)
+
+
+  # Unquote the element selector
+  json_object <- base::gsub('(?<="elements": )"(.*?)"', "\\1", json_object, perl = TRUE)
 
   # Print the JSON object
   return(json_object)

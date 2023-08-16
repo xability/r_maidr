@@ -57,12 +57,12 @@ maidr_dependency <- function() {
       "barplot.js",
       "boxplot.js",
       "constants.js",
-      "controls.js",
       "display.js",
       "heatmap.js",
-      "init.js",
       # "maidr.js",
-      "scatterplot.js"
+      "scatterplot.js",
+      "controls.js",
+      "init.js"
     ),
     stylesheet = "styles.css",
     all_files = TRUE
