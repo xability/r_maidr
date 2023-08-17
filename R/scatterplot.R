@@ -28,8 +28,8 @@ create_scatterplot_schema <- function(id, title, xlabel, ylabel, layers) {
     title = title,
     name = title,
     elements = list(
-      "document.querySelectorAll('svg circle')",
-      "document.querySelector('svg g:nth-last-of-type(2) > polyline:nth-last-of-type(1)')"
+      sprintf("document.querySelectorAll('svg#%s circle')", id),
+      sprintf("document.querySelector('svg#%s g:nth-last-of-type(2) > polyline:nth-last-of-type(1)')", id)
     ),
     axes = list(
       x = list(label = xlabel),
