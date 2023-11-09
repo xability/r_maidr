@@ -62,19 +62,8 @@ maidr_dependency <- function() {
     version = "0.0.9",
     src = "htmlwidgets/lib/maidr-0.0.9",
     package = "maidr",
-    script = c(
-      "js/audio.js",
-      "js/barplot.js",
-      "js/boxplot.js",
-      "js/constants.js",
-      "js/display.js",
-      "js/heatmap.js",
-      # "maidr.js",
-      "js/scatterplot.js",
-      "js/controls.js",
-      "js/init.js"
-    ),
-    stylesheet = "css/styles.css",
+    script = "js/maidr.min.js",
+    stylesheet = "css/maidr_style.min.css",
     all_files = TRUE
   )
 }
