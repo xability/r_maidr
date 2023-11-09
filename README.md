@@ -4,6 +4,7 @@
 # maidr
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 The goal of maidr is to make data visualization accessible to blind and
@@ -16,5 +17,5 @@ You can install the development version of maidr from
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("jooyoungseo/r_maidr")
+remotes::install_github("uiuc-ischool-accessible-computing-lab/r_maidr")
 ```

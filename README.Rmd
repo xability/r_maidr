@@ -1,5 +1,7 @@
 ---
-output: github_document
+output:
+  github_document:
+    html_preview: false
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -26,5 +28,5 @@ You can install the development version of maidr from [GitHub](https://github.co
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("jooyoungseo/r-maidr")
+remotes::install_github("uiuc-ischool-accessible-computing-lab/r_maidr")
 ```
