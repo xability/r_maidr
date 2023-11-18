@@ -16,8 +16,9 @@ You can install the development version of maidr from
 [GitHub](https://github.com/) with:
 
 ``` r
-if (!require(remotes)) {
-    install.packages("remotes")
+if (!require(pak)) {
+    install.packages("pak")
 }
-remotes::install_github("uiuc-ischool-accessible-computing-lab/r_maidr@dev")
+
+pak::pak("uiuc-ischool-accessible-computing-lab/r_maidr")
 ```
