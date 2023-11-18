@@ -23,7 +23,7 @@ create_scatterplot_schema <- function(id, title, xlabel, ylabel, layers) {
 
   # Create the list that represents your JSON structure
   json_data <- list(
-    type = c("scatter", "line"),
+    type = c("scatter", "smooth"),
     id = id,
     title = title,
     name = title,
