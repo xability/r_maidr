@@ -1,0 +1,45 @@
+{
+  // R related settings
+  "[r]": {
+    "editor.defaultFormatter": "REditorSupport.r",
+    "editor.wordSeparators": "`~!@#%$^&*()-=+[{]}\\|;:'\",<>/?",
+    "editor.formatOnType": true,
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
+  "[rmd]": {
+    "editor.defaultFormatter": "REditorSupport.r",
+    "editor.formatOnType": true,
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
+  "files.associations": {
+    "*.Rmd": "rmd"
+  },
+  "r.sessionWatcher": true,
+  "r.session.useWebServer": true,
+  "r.plot.useHttpgd": true,
+  "r.plot.defaults.fullWindowMode": true,
+  "r.removeLeadingComments": true,
+  "r.rterm.option": ["--no-save", "--no-restore", "--quiet"],
+  // "r.alwaysUseActiveTerminal": true,
+  "r.liveShare.defaults.shareBrowser": true,
+  "r.source.focus": "none",
+  "r.workspaceViewer.showObjectSize": true,
+
+  // Additional settings for R terminal and path completion
+  "path-autocomplete.pathMappings": {
+    "/": "/",
+    "./": "${folder}"
+  },
+  "path-intellisense.mappings": {
+    ".": "${workspaceFolder}"
+  },
+  "explorer.copyRelativePathSeparator": "/",
+
+  "github.copilot.chat.experimental.codeGeneration.instructions": [
+    {
+      "file": ".vscode/copilot_instruction.md"
+    }
+  ]
+}
